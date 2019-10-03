@@ -3,12 +3,12 @@ class TaxRateCalculation
   BASIC_SALES_TAX_RATE = 0.1
   IMPORTED_SALES_TAX_RATE = 0.05
   USER_INPUT_YES = /^(yes|y)$/i
-  
-  def get_product_details_display_total_amount
+
+  def take_product_details_to_display_total_amount
     products = []
     loop do
-	  product = Product.new      
-      if product.get_product_details_from_user
+      product = Product.new
+      if product.take_product_details_from_user
         product.total_tax_rate = total_tax_calc(product.imported, product.exempted)
         products.push(product)
       else
@@ -17,15 +17,19 @@ class TaxRateCalculation
       print 'Do you want to add more items to your list(y/n): '
       break unless gets.chomp =~ USER_INPUT_YES
     end
-	sum = 0
+    display_products_details_with_total_amount(products)
+  end
+
+  private
+
+  def display_products_details_with_total_amount(products)
+    sum = 0
     products.each do |product|
       puts product.display_product_details
       sum += product.total_price
     end
     puts "Grand Total = #{sum}"
   end
-  
-  private
 
   def exempt?(exempt)
     exempt =~ USER_INPUT_YES
@@ -44,10 +48,10 @@ class TaxRateCalculation
 end
 
 class Product
-  INPUT_YES_NO = /(?i)^(?:Yes|No)$/  
+  INPUT_YES_NO = /(?i)^(?:Yes|No)$/
   attr_accessor :name, :price, :total_tax_rate, :imported, :exempted
-  
-  def get_product_details_from_user
+
+  def take_product_details_from_user
     print 'Name of the product: '
     self.name = gets.chomp
     return false if name.empty?
@@ -59,19 +63,18 @@ class Product
     return false unless exempted =~ INPUT_YES_NO
     print 'Price: '
     self.price = gets.chomp.to_i
-    return false unless price > 0    
+    return false unless price > 0
     true
   end
-  
+
   def total_price
     price + total_tax_rate * price
   end
-  
+
   def display_product_details
     "#{name}\t#{price}\t#{total_tax_rate * 100}\t#{total_price}"
   end
 end
 
-
 tax_rate_calculation = TaxRateCalculation.new
-tax_rate_calculation.get_product_details_display_total_amount
+tax_rate_calculation.take_product_details_to_display_total_amount
