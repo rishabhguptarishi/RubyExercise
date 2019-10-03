@@ -1,15 +1,16 @@
 # Your Ruby code here
-class TaxRateCalculation
+class TaxRateCalculator
   BASIC_SALES_TAX_RATE = 0.1
   IMPORTED_SALES_TAX_RATE = 0.05
   USER_INPUT_YES = /^(yes|y)$/i
+  attr_accessor :products
 
-  def take_product_details_to_display_total_amount
-    products = []
+  def execute
+    products = []  
     loop do
       product = Product.new
-      if product.take_product_details_from_user
-        product.total_tax_rate = total_tax_calc(product.imported, product.exempted)
+      if product.take_details
+        product.total_tax_rate = calculate_total_tax(product)
         products.push(product)
       else
         puts 'Invalid User Input'
@@ -17,12 +18,13 @@ class TaxRateCalculation
       print 'Do you want to add more items to your list(y/n): '
       break unless gets.chomp =~ USER_INPUT_YES
     end
-    display_products_details_with_total_amount(products)
+	self.products = products
+    display_products_details
   end
 
   private
 
-  def display_products_details_with_total_amount(products)
+  def display_products_details
     sum = 0
     products.each do |product|
       puts product.display_product_details
@@ -39,10 +41,10 @@ class TaxRateCalculation
     imported =~ USER_INPUT_YES
   end
 
-  def total_tax_calc(imported, exempted)
+  def calculate_total_tax(product)
     tax = 0
-    tax += BASIC_SALES_TAX_RATE unless exempt?(exempted)
-    tax += IMPORTED_SALES_TAX_RATE if imported?(imported)
+    tax += BASIC_SALES_TAX_RATE unless exempt?(product.exempted)
+    tax += IMPORTED_SALES_TAX_RATE if imported?(product.imported)
     tax
   end
 end
@@ -51,7 +53,7 @@ class Product
   INPUT_YES_NO = /(?i)^(?:Yes|No)$/
   attr_accessor :name, :price, :total_tax_rate, :imported, :exempted
 
-  def take_product_details_from_user
+  def take_details
     print 'Name of the product: '
     self.name = gets.chomp
     return false if name.empty?
@@ -76,5 +78,5 @@ class Product
   end
 end
 
-tax_rate_calculation = TaxRateCalculation.new
-tax_rate_calculation.take_product_details_to_display_total_amount
+tax_rate_calculator = TaxRateCalculator.new
+tax_rate_calculator.execute
